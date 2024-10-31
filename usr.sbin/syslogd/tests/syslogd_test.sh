@@ -13,6 +13,8 @@
 # Tests to-do:
 # actions: hostname, users
 
+. $(atf_get_srcdir)/syslogd_test_common.sh
+
 readonly SYSLOGD_UDP_PORT="5140"
 readonly SYSLOGD_CONFIG="${PWD}/syslog.conf"
 readonly SYSLOGD_LOCAL_SOCKET="${PWD}/log.sock"
@@ -41,17 +43,7 @@ syslogd_start()
         &
 
     # Give syslogd a bit of time to spin up.
-    while [ "$((i+=1))" -le 20 ]; do
-        [ -S "${SYSLOGD_LOCAL_SOCKET}" ] && return
-        sleep 0.1
-    done
-    atf_fail "timed out waiting for syslogd to start"
-}
-
-# Simple logger(1) wrapper.
-syslogd_log()
-{
-    atf_check -s exit:0 -o empty -e empty logger $*
+    wait_for_syslogd_socket_or_fail "${SYSLOGD_LOCAL_SOCKET}"
 }
 
 # Make syslogd reload its configuration file.
