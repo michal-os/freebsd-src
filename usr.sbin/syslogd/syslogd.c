@@ -421,6 +421,7 @@ static bool	KeepKernFac;	/* Keep remotely logged kernel facility */
 static bool	needdofsync = true; /* Are any file(s) waiting to be fsynced? */
 static struct pidfh *pfh;
 static bool	RFC3164OutputFormat = true; /* Use legacy format by default. */
+static bool	RFC3164OutputFormatStrict = false; /* Use recommended format. */
 
 struct iovlist;
 
@@ -730,7 +731,11 @@ main(int argc, char *argv[])
 			else if (strcmp(optarg, "syslog") == 0 ||
 			    strcmp(optarg, "rfc5424") == 0)
 				RFC3164OutputFormat = false;
-			else
+			else if (strcmp(optarg, "strict") == 0 ||
+			    strcmp(optarg, "rfc3164-strict") == 0) {
+				RFC3164OutputFormat = true;
+				RFC3164OutputFormatStrict = true;
+			} else
 				usage();
 			break;
 		case 'o':
@@ -2061,7 +2066,10 @@ fprintlog_rfc3164(struct filed *f, const char *hostname, const char *app_name,
 		iovlist_append(&il, priority_number);
 		iovlist_append(&il, ">");
 		iovlist_append(&il, timebuf);
-		if (strcasecmp(hostname, LocalHostName) != 0) {
+		if (RFC3164OutputFormatStrict) {
+			iovlist_append(&il, " ");
+			iovlist_append(&il, hostname);
+		} else if (strcasecmp(hostname, LocalHostName) != 0) {
 			iovlist_append(&il, " Forwarded from ");
 			iovlist_append(&il, hostname);
 			iovlist_append(&il, ":");

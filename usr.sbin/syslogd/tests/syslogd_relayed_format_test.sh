@@ -99,6 +99,58 @@ O_flag_rfc3164_relayed_cleanup()
         "${SYSLOGD_UDP_PORT_3}"
 }
 
+atf_test_case "O_flag_strict_relayed" "cleanup"
+O_flag_strict_relayed_head()
+{
+    atf_set descr "strict log format test on a relayed syslog message"
+    set_common_atf_metadata_with_progs "logger" "tcpdump"
+}
+O_flag_strict_relayed_body()
+{
+    local format="strict"
+    local logfile="${PWD}/${format}_relayed_message.log"
+    local pcapfile="${PWD}/${format}_message_forwarding.pcap"
+
+    setup_relayed_format_test "${format}" "${logfile}" "${pcapfile}"
+
+    atf_check -s exit:0 -o match:"${REGEX_RFC3164_LOGFILE}" cat "${logfile}"
+    atf_check -s exit:0 -e ignore -o match:"${REGEX_RFC3164_PAYLOAD}" \
+        tcpdump -A -r "${pcapfile}"
+}
+O_flag_strict_relayed_cleanup()
+{
+    syslogd_stop_on_ports \
+        "${SYSLOGD_UDP_PORT_1}" \
+        "${SYSLOGD_UDP_PORT_2}" \
+        "${SYSLOGD_UDP_PORT_3}"
+}
+
+atf_test_case "O_flag_rfc3164strict_relayed" "cleanup"
+O_flag_rfc3164strict_relayed_head()
+{
+    atf_set descr "rfc3164-strict log format test on a relayed syslog message"
+    set_common_atf_metadata_with_progs "logger" "tcpdump"
+}
+O_flag_rfc3164strict_relayed_body()
+{
+    local format="rfc3164-strict"
+    local logfile="${PWD}/${format}_relayed_message.log"
+    local pcapfile="${PWD}/${format}_message_forwarding.pcap"
+
+    setup_relayed_format_test "${format}" "${logfile}" "${pcapfile}"
+
+    atf_check -s exit:0 -o match:"${REGEX_RFC3164_LOGFILE}" cat "${logfile}"
+    atf_check -s exit:0 -e ignore -o match:"${REGEX_RFC3164_PAYLOAD}" \
+        tcpdump -A -r "${pcapfile}"
+}
+O_flag_rfc3164strict_relayed_cleanup()
+{
+    syslogd_stop_on_ports \
+        "${SYSLOGD_UDP_PORT_1}" \
+        "${SYSLOGD_UDP_PORT_2}" \
+        "${SYSLOGD_UDP_PORT_3}"
+}
+
 atf_test_case "O_flag_syslog_relayed" "cleanup"
 O_flag_syslog_relayed_head()
 {
@@ -155,6 +207,8 @@ atf_init_test_cases()
 {
     atf_add_test_case "O_flag_bsd_relayed"
     atf_add_test_case "O_flag_rfc3164_relayed"
+    atf_add_test_case "O_flag_strict_relayed"
+    atf_add_test_case "O_flag_rfc3164strict_relayed"
     atf_add_test_case "O_flag_syslog_relayed"
     atf_add_test_case "O_flag_rfc5424_relayed"
 }
